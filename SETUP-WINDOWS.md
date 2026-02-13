@@ -44,11 +44,9 @@ Buka Command Prompt atau PowerShell:
 
 ```powershell
 # Clone repo ini
-git clone https://github.com/USERNAME/tazama-project.git
+git clone https://github.com/wahyupermana-10/tazama-project.git
 cd tazama-project
 ```
-
-> Ganti `USERNAME` dengan username GitHub kamu.
 
 ---
 
@@ -316,7 +314,7 @@ docker system prune -a
 
 ```powershell
 # 1. Clone
-git clone https://github.com/USERNAME/tazama-project.git
+git clone https://github.com/wahyupermana-10/tazama-project.git
 cd tazama-project
 
 # 2. Start Tazama
