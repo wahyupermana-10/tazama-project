@@ -1,0 +1,32 @@
+# Dependencies
+node_modules/
+*/node_modules/
+
+# Build output
+*/build/
+*/lib/
+!tazama-libs/*/lib/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+
+# Environment
+.env.local
+*.env.local
+
+# Logs
+*.log
+npm-debug.log*
+
+# Lock files (keep package-lock.json tapi ignore yang besar)
+# package-lock.json di subfolder bisa di-regenerate
+
+# Git subfolder repos backup
+*/.git_bak/
+
+# GitHub folders in subprojects
+*/.github/

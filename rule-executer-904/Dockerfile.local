@@ -1,0 +1,17 @@
+# Simple Dockerfile for local build
+FROM node:20-alpine
+
+WORKDIR /home/app
+
+# Copy all files
+COPY build/ ./build/
+COPY node_modules/ ./node_modules/
+COPY package.json ./
+
+ENV NODE_ENV=production
+ENV FUNCTION_NAME="rule-904-rel-1-0-0"
+ENV RULE_VERSION="1.0.0"
+ENV RULE_NAME="904"
+ENV MAX_CPU=1
+
+CMD ["node", "build/index.js"]

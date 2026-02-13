@@ -1,0 +1,71 @@
+{
+  "name": "@tazama-lf/frms-coe-startup-lib",
+  "version": "3.0.0",
+  "description": "Tazama startup package library",
+  "main": "lib/index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tazama-lf/frms-coe-startup-lib.git"
+  },
+  "files": [
+    "lib"
+  ],
+  "publishConfig": {
+    "@tazama-lf:registry": "https://npm.pkg.github.com/",
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsc --project tsconfig.json",
+    "clean": "npx rimraf lib node_modules coverage package-lock.json",
+    "dry": "npm publish --dry-run",
+    "test": "jest --config=jest.config.ts --passWithNoTests",
+    "lint": "npm run lint:eslint && npm run lint:prettier",
+    "lint:eslint": "eslint",
+    "lint:eslint-unused": "eslint --report-unused-disable-directives",
+    "lint:eslint-no-inline": "eslint --no-inline-config",
+    "lint:prettier": "prettier --check \"**/*.ts\"",
+    "fix:eslint": "eslint --fix",
+    "fix:prettier": "prettier --write \"**/*.ts\"",
+    "prepare": "husky"
+  },
+  "dependencies": {
+    "@google-cloud/bigquery": "^8.1.1",
+    "@google-cloud/storage": "^7.16.0",
+    "@tazama-lf/frms-coe-lib": "6.0.0",
+    "amqplib": "0.10.6",
+    "axios": "^1.12.2",
+    "google-auth-library": "^10.2.0",
+    "nats": "^2.29.3"
+  },
+  "keywords": [],
+  "author": "Tazama.org",
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "@eslint-community/eslint-plugin-eslint-comments": "^4.5.0",
+    "@stylistic/eslint-plugin": "^5.4.0",
+    "@types/amqplib": "0.10.6",
+    "@types/jest": "^30.0.0",
+    "@types/node": "^24.1.0",
+    "@typescript-eslint/eslint-plugin": "^8.45.0",
+    "@typescript-eslint/parser": "^8.45.0",
+    "dotenv": "^17.2.3",
+    "eslint": "^9.36.0",
+    "eslint-config-love": "^121.0.0",
+    "eslint-config-prettier": "^10.1.8",
+    "husky": "^9.1.7",
+    "jest": "^30.2.0",
+    "lint-staged": "^16.2.3",
+    "prettier": "^3.6.2",
+    "rimraf": "^6.0.1",
+    "ts-jest": "^29.4.4",
+    "ts-node": "^10.9.2",
+    "tslib": "^2.8.1",
+    "typescript": "^5.8.3"
+  },
+  "lint-staged": {
+    "*.{js,ts}": [
+      "eslint --fix",
+      "prettier --write"
+    ]
+  }
+}

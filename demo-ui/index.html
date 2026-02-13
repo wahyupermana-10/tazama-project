@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tazama Demo - Fraud Detection</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', sans-serif; background: #1a1a2e; color: #eee; min-height: 100vh; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        h1 { text-align: center; color: #00d9ff; margin-bottom: 10px; }
+        .subtitle { text-align: center; color: #888; margin-bottom: 30px; }
+        
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+        
+        .card { background: #16213e; border-radius: 12px; padding: 20px; }
+        .card h2 { color: #00d9ff; margin-bottom: 15px; font-size: 1.2em; border-bottom: 1px solid #333; padding-bottom: 10px; }
+        
+        .rule-item { background: #1a1a2e; padding: 12px; border-radius: 8px; margin-bottom: 10px; }
+        .rule-item h3 { color: #ffd700; font-size: 1em; margin-bottom: 5px; }
+        .rule-item p { color: #aaa; font-size: 0.85em; }
+        .rule-item .bands { margin-top: 8px; font-size: 0.8em; }
+        .rule-item .bands span { display: inline-block; background: #2d3a5a; padding: 3px 8px; border-radius: 4px; margin: 2px; }
+        
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; color: #aaa; font-size: 0.9em; }
+        .form-group input, .form-group select { width: 100%; padding: 10px; border: 1px solid #333; border-radius: 6px; background: #1a1a2e; color: #fff; font-size: 1em; }
+        .form-group input:focus { outline: none; border-color: #00d9ff; }
+        
+        .btn { padding: 12px 24px; border: none; border-radius: 6px; cursor: pointer; font-size: 1em; font-weight: bold; transition: all 0.3s; }
+        .btn-primary { background: #00d9ff; color: #000; }
+        .btn-primary:hover { background: #00b8d9; }
+        .btn-danger { background: #ff4757; color: #fff; }
+        .btn-warning { background: #ffa502; color: #000; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        
+        .preset-btns { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
+        .preset-btns .btn { flex: 1; min-width: 120px; padding: 8px; font-size: 0.85em; }
+        
+        .result-box { background: #1a1a2e; border-radius: 8px; padding: 15px; margin-top: 15px; min-height: 150px; }
+        .result-box.loading { text-align: center; color: #888; }
+        .result-box .status { font-size: 2em; font-weight: bold; text-align: center; padding: 20px; border-radius: 8px; }
+        .status.NALT { background: #2ed573; color: #000; }
+        .status.ALRT { background: #ff4757; color: #fff; }
+        .status.ERROR { background: #ffa502; color: #000; }
+        
+        .detail-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #333; }
+        .detail-item:last-child { border-bottom: none; }
+        .detail-label { color: #888; }
+        .detail-value { color: #fff; font-weight: bold; }
+        
+        .history { max-height: 300px; overflow-y: auto; }
+        .history-item { background: #1a1a2e; padding: 10px; border-radius: 6px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+        .history-item .info { flex: 1; }
+        .history-item .msgid { font-size: 0.8em; color: #888; }
+        .history-item .amount { color: #ffd700; }
+        .history-item .badge { padding: 4px 10px; border-radius: 4px; font-size: 0.8em; font-weight: bold; }
+        .badge.NALT { background: #2ed573; color: #000; }
+        .badge.ALRT { background: #ff4757; color: #fff; }
+</style>
+</head>
+<body>
+    <div class="container">
+        <h1>🛡️ Tazama Fraud Detection Demo</h1>
+        <p class="subtitle">Real-time Transaction Monitoring System</p>
+        
+        <div class="grid">
+            <!-- Left Column: Rules & Typologies -->
+            <div>
+                <div class="card">
+                    <h2>📋 Active Rules (Custom Demo)</h2>
+                    <div class="rule-item">
+                        <h3>🔴 Rule 903 - Large Transaction Detection</h3>
+                        <p>Mendeteksi transaksi dengan nominal besar yang mencurigakan</p>
+                        <div class="bands">
+                            <span>< 1jt: 0</span>
+                            <span>1-5jt: 100</span>
+                            <span>5-10jt: 300</span>
+                            <span>> 10jt: 500</span>
+                        </div>
+                    </div>
+                    <div class="rule-item">
+                        <h3>🟡 Rule 904 - Rapid Transaction Detection</h3>
+                        <p>Mendeteksi transaksi berulang dalam waktu singkat (1 menit)</p>
+                        <div class="bands">
+                            <span>1 tx: 0</span>
+                            <span>2-3 tx: 200</span>
+                            <span>4-5 tx: 400</span>
+                            <span>6+ tx: 600</span>
+                        </div>
+                    </div>
+                    <div class="rule-item" style="background: #2d3a5a; border-left: 3px solid #888;">
+                        <h3 style="color: #888;">⚪ Rule 901 & 902 - DISABLED</h3>
+                        <p style="color: #666;">Default rules dinonaktifkan untuk demo yang lebih bersih</p>
+                    </div>
+                </div>
+                
+                <div class="card" style="margin-top: 20px;">
+                    <h2>🎯 Active Typologies</h2>
+                    <div class="rule-item">
+                        <h3>903-Large-Transaction</h3>
+                        <p>Evaluasi nominal transaksi</p>
+                        <div class="bands">
+                            <span style="background:#ffa502">Alert: ≥ 200</span>
+                            <span style="background:#ff4757;color:#fff">Block: ≥ 400</span>
+                        </div>
+                    </div>
+                    <div class="rule-item">
+                        <h3>904-Rapid-Transaction</h3>
+                        <p>Evaluasi frekuensi transaksi dalam 1 menit</p>
+                        <div class="bands">
+                            <span style="background:#ffa502">Alert: ≥ 200</span>
+                            <span style="background:#ff4757;color:#fff">Block: ≥ 400</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Transaction Form -->
+            <div>
+                <div class="card">
+                    <h2>💸 Kirim Transaksi</h2>
+                    
+                    <p style="color: #888; margin-bottom: 15px; font-size: 0.9em;">Quick Presets:</p>
+                    <div class="preset-btns">
+                        <button class="btn btn-primary" onclick="setPreset('normal')">✅ Normal (500K)</button>
+                        <button class="btn btn-danger" onclick="setPreset('large')">💰 Large (15M)</button>
+                        <button class="btn btn-warning" onclick="setPreset('rapid')">⚡ Rapid Test</button>
+                        <button class="btn" style="background:#555" onclick="resetRapid()">🔄 Reset Rapid</button>
+                    </div>
+                    <div id="rapidInfo" style="display:none; background:#2d3a5a; padding:10px; border-radius:6px; margin-bottom:15px; font-size:0.85em;">
+                        <span style="color:#ffa502">⚡ Rapid Test Mode</span>
+                        <span id="rapidCounter" style="float:right; color:#fff;">TX #1</span>
+                        <br><small style="color:#888">Klik "Kirim Transaksi" berulang untuk simulasi transaksi cepat dari user yang sama</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Nama Pengirim (Debtor)</label>
+                        <input type="text" id="debtorName" value="John Doe" />
+                    </div>
+                    <div class="form-group">
+                        <label>ID Pengirim</label>
+                        <input type="text" id="debtorId" value="USER_001" />
+                    </div>
+                    <div class="form-group">
+                        <label>Nama Penerima (Creditor)</label>
+                        <input type="text" id="creditorName" value="Jane Smith" />
+                    </div>
+                    <div class="form-group">
+                        <label>Jumlah Transfer (IDR)</label>
+                        <input type="number" id="amount" value="500000" />
+                    </div>
+                    
+                    <button class="btn btn-primary" style="width: 100%;" id="sendBtn" onclick="sendTransaction()">
+                        🚀 Kirim Transaksi
+                    </button>
+                    
+                    <div class="result-box" id="resultBox">
+                        <p style="color: #666; text-align: center;">Hasil evaluasi akan muncul di sini</p>
+                    </div>
+                </div>
+                
+                <div class="card" style="margin-top: 20px;">
+                    <h2>📜 Riwayat Transaksi</h2>
+                    <div class="history" id="historyList">
+                        <p style="color: #666; text-align: center;">Belum ada transaksi</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const TMS_URL = 'http://localhost:5000';
+        const HASURA_URL = 'http://localhost:6100';
+        let txCounter = Date.now();
+        let history = [];
+
+        // Store rapid test debtor ID to reuse for rapid testing
+        let rapidDebtorId = null;
+        let rapidTxCount = 0;
+
+        function resetRapid() {
+            rapidDebtorId = null;
+            rapidTxCount = 0;
+            document.getElementById('rapidInfo').style.display = 'none';
+            alert('Rapid test reset! Klik "Rapid Test" untuk mulai sesi baru.');
+        }
+
+        function setPreset(type) {
+            const ts = Date.now();
+            
+            // Hide rapid info for non-rapid presets
+            document.getElementById('rapidInfo').style.display = type === 'rapid' ? 'block' : 'none';
+            
+            if (type === 'rapid') {
+                // For rapid test, reuse same debtor ID or create new one
+                if (!rapidDebtorId || rapidTxCount >= 6) {
+                    rapidDebtorId = 'RAPID_' + ts;
+                    rapidTxCount = 0;
+                }
+                rapidTxCount++;
+                document.getElementById('rapidCounter').textContent = 'TX #' + rapidTxCount + ' dari debtor ' + rapidDebtorId.substring(0,12);
+            }
+            
+            const presets = {
+                normal: { debtorName: 'User Normal', debtorId: 'NORMAL_' + ts, creditorName: 'Recv_' + ts, amount: 500000 },
+                large: { debtorName: 'User Large', debtorId: 'LARGE_' + ts, creditorName: 'Recv_' + ts, amount: 15000000 },
+                rapid: { debtorName: 'User Rapid #' + rapidTxCount, debtorId: rapidDebtorId, creditorName: 'Recv_' + ts, amount: 100000 }
+            };
+            const p = presets[type];
+            document.getElementById('debtorName').value = p.debtorName;
+            document.getElementById('debtorId').value = p.debtorId;
+            document.getElementById('creditorName').value = p.creditorName;
+            document.getElementById('amount').value = p.amount;
+        }
+
+        async function sendTransaction() {
+            const btn = document.getElementById('sendBtn');
+            const resultBox = document.getElementById('resultBox');
+            
+            btn.disabled = true;
+            btn.textContent = '⏳ Mengirim...';
+            resultBox.innerHTML = '<p style="color: #888; text-align: center;">Memproses transaksi...</p>';
+
+            const debtorName = document.getElementById('debtorName').value;
+            const debtorId = document.getElementById('debtorId').value;
+            const creditorName = document.getElementById('creditorName').value;
+            const amount = parseInt(document.getElementById('amount').value);
+            
+            const txId = 'TX_' + (++txCounter);
+            const e2eId = 'E2E_' + txCounter;
+            const timestamp = new Date().toISOString();
+
+            try {
+                // Send pacs.008
+                await fetch(`${TMS_URL}/v1/evaluate/iso20022/pacs.008.001.10`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(buildPacs008(txId, e2eId, timestamp, debtorName, debtorId, creditorName, amount))
+                });
+
+                await new Promise(r => setTimeout(r, 500));
+
+                // Send pacs.002
+                const msgId = 'PACS002_' + txCounter;
+                await fetch(`${TMS_URL}/v1/evaluate/iso20022/pacs.002.001.12`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(buildPacs002(msgId, e2eId, timestamp, debtorId, amount))
+                });
+
+                await new Promise(r => setTimeout(r, 1500));
+
+                // Get evaluation result
+                const result = await getEvaluation(msgId);
+                displayResult(result, msgId, amount, debtorName);
+                
+            } catch (error) {
+                resultBox.innerHTML = `<div class="status ERROR">ERROR</div><p style="text-align:center; margin-top:10px;">${error.message}</p>`;
+            }
+
+            btn.disabled = false;
+            btn.textContent = '🚀 Kirim Transaksi';
+        }
+
+        function buildPacs008(txId, e2eId, timestamp, debtorName, debtorId, creditorName, amount) {
+            const creditorId = 'CRED_' + txCounter;
+            return {
+                TxTp: "pacs.008.001.10",
+                FIToFICstmrCdtTrf: {
+                    GrpHdr: { MsgId: txId, CreDtTm: timestamp, NbOfTxs: 1, SttlmInf: { SttlmMtd: "CLRG" } },
+                    CdtTrfTxInf: {
+                        PmtId: { InstrId: "INSTR_" + txId, EndToEndId: e2eId },
+                        IntrBkSttlmAmt: { Amt: { Amt: amount, Ccy: "IDR" } },
+                        InstdAmt: { Amt: { Amt: amount, Ccy: "IDR" } },
+                        XchgRate: 1, ChrgBr: "DEBT",
+                        ChrgsInf: { Amt: { Amt: 0, Ccy: "IDR" }, Agt: { FinInstnId: { ClrSysMmbId: { MmbId: "fsp001" } } } },
+                        InitgPty: { Nm: debtorName, Id: { PrvtId: { DtAndPlcOfBirth: { BirthDt: "1990-01-01", CityOfBirth: "Jakarta", CtryOfBirth: "ID" }, Othr: [{ Id: debtorId, SchmeNm: { Prtry: "MSISDN" } }] } }, CtctDtls: { MobNb: "+62-811" } },
+                        Dbtr: { Nm: debtorName, Id: { PrvtId: { DtAndPlcOfBirth: { BirthDt: "1990-01-01", CityOfBirth: "Jakarta", CtryOfBirth: "ID" }, Othr: [{ Id: debtorId, SchmeNm: { Prtry: "MSISDN" } }] } }, CtctDtls: { MobNb: "+62-811" } },
+                        DbtrAcct: { Id: { Othr: [{ Id: "ACC_" + debtorId, SchmeNm: { Prtry: "MSISDN" } }] }, Nm: "Account" },
+                        DbtrAgt: { FinInstnId: { ClrSysMmbId: { MmbId: "fsp001" } } },
+                        CdtrAgt: { FinInstnId: { ClrSysMmbId: { MmbId: "fsp002" } } },
+                        Cdtr: { Nm: creditorName, Id: { PrvtId: { DtAndPlcOfBirth: { BirthDt: "1985-01-01", CityOfBirth: "Bandung", CtryOfBirth: "ID" }, Othr: [{ Id: creditorId, SchmeNm: { Prtry: "MSISDN" } }] } }, CtctDtls: { MobNb: "+62-822" } },
+                        CdtrAcct: { Id: { Othr: [{ Id: "ACC_" + creditorId, SchmeNm: { Prtry: "MSISDN" } }] }, Nm: "Account" },
+                        Purp: { Cd: "MP2P" }
+                    },
+                    RgltryRptg: { Dtls: { Tp: "BALANCE OF PAYMENTS", Cd: "100" } },
+                    RmtInf: { Ustrd: "Transfer" },
+                    SplmtryData: { Envlp: { Doc: { Xprtn: "2026-12-31T23:59:59.000Z", InitgPty: { Glctn: { Lat: "-6.2", Long: "106.8" } } } } }
+                }
+            };
+        }
+
+        function buildPacs002(msgId, e2eId, timestamp, debtorId, amount) {
+            const creditorId = 'CRED_' + txCounter;
+            return {
+                TxTp: "pacs.002.001.12",
+                FIToFIPmtSts: {
+                    GrpHdr: { MsgId: msgId, CreDtTm: timestamp },
+                    TxInfAndSts: {
+                        OrgnlInstrId: "INSTR_" + msgId, OrgnlEndToEndId: e2eId, TxSts: "ACCC",
+                        ChrgsInf: [
+                            { Amt: { Amt: 0, Ccy: "IDR" }, Agt: { FinInstnId: { ClrSysMmbId: { MmbId: "fsp001" } } } },
+                            { Amt: { Amt: 0, Ccy: "IDR" }, Agt: { FinInstnId: { ClrSysMmbId: { MmbId: "fsp002" } } } }
+                        ],
+                        AccptncDtTm: timestamp,
+                        InstgAgt: { FinInstnId: { ClrSysMmbId: { MmbId: "fsp001" } } },
+                        InstdAgt: { FinInstnId: { ClrSysMmbId: { MmbId: "fsp002" } } }
+                    }
+                },
+                DataCache: { dbtrId: debtorId, cdtrId: creditorId, dbtrAcctId: "ACC_" + debtorId, cdtrAcctId: "ACC_" + creditorId, instdAmt: { amt: amount, ccy: "IDR" } }
+            };
+        }
+
+        async function getEvaluation(msgId) {
+            const res = await fetch(`${HASURA_URL}/v1/graphql`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'x-hasura-admin-secret': 'password' },
+                body: JSON.stringify({ query: `{ evaluation(where: {messageid: {_eq: "${msgId}"}}) { evaluation } }` })
+            });
+            const data = await res.json();
+            if (data.data?.evaluation?.[0]?.evaluation) {
+                return data.data.evaluation[0].evaluation;
+            }
+            throw new Error('Evaluation not found');
+        }
+
+        function displayResult(result, msgId, amount, debtorName) {
+            const status = result.report?.status || 'UNKNOWN';
+            const typologies = result.report?.tadpResult?.typologyResult || [];
+            
+            let statusText = status === 'ALRT' ? '🚨 ALERT - TRANSAKSI DIBLOKIR' : '✅ APPROVED - TRANSAKSI AMAN';
+            let html = `<div class="status ${status}">${statusText}</div>`;
+            html += '<div style="margin-top: 15px;">';
+            html += `<div class="detail-item"><span class="detail-label">Message ID</span><span class="detail-value">${msgId}</span></div>`;
+            html += `<div class="detail-item"><span class="detail-label">Amount</span><span class="detail-value">Rp ${amount.toLocaleString('id-ID')}</span></div>`;
+            
+            // Show typology results with more detail
+            html += '<div style="margin-top:10px; padding-top:10px; border-top:1px solid #333;">';
+            html += '<p style="color:#888; font-size:0.85em; margin-bottom:8px;">📊 Evaluasi Typology:</p>';
+            
+            typologies.forEach(t => {
+                const score = t.result || 0;
+                let statusIcon = '✅';
+                let statusText = 'Normal';
+                let color = '#2ed573';
+                let explanation = '';
+                
+                if (score >= 400) {
+                    statusIcon = '🚫';
+                    statusText = 'BLOCKED';
+                    color = '#ff4757';
+                    explanation = ' (melebihi interdiction threshold)';
+                } else if (score >= 200) {
+                    statusIcon = '⚠️';
+                    statusText = 'Alert';
+                    color = '#ffa502';
+                    explanation = ' (melebihi alert threshold)';
+                }
+                
+                html += `<div class="detail-item">
+                    <span class="detail-label">${statusIcon} ${t.cfg}</span>
+                    <span class="detail-value" style="color:${color}">${score}${explanation}</span>
+                </div>`;
+            });
+            html += '</div>';
+            
+            html += '</div>';
+            document.getElementById('resultBox').innerHTML = html;
+
+            // Add to history
+            history.unshift({ msgId, amount, status, debtorName, time: new Date().toLocaleTimeString() });
+            updateHistory();
+        }
+
+        function updateHistory() {
+            const list = document.getElementById('historyList');
+            if (history.length === 0) {
+                list.innerHTML = '<p style="color: #666; text-align: center;">Belum ada transaksi</p>';
+                return;
+            }
+            list.innerHTML = history.slice(0, 10).map(h => `
+                <div class="history-item">
+                    <div class="info">
+                        <div><strong>${h.debtorName}</strong> - <span class="amount">Rp ${h.amount.toLocaleString('id-ID')}</span></div>
+                        <div class="msgid">${h.msgId} • ${h.time}</div>
+                    </div>
+                    <span class="badge ${h.status}">${h.status}</span>
+                </div>
+            `).join('');
+        }
+    </script>
+</body>
+</html>

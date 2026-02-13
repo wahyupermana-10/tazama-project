@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tazama Rule Builder</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: #fff;
+            padding: 20px;
+        }
+        .container { max-width: 1400px; margin: 0 auto; }
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5rem;
+            background: linear-gradient(90deg, #00d4ff, #7b2cbf);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        @media (max-width: 1000px) { .grid { grid-template-columns: 1fr; } }
+        .card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 16px;
+            padding: 24px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .card h2 {
+            color: #00d4ff;
+            margin-bottom: 20px;
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .form-group { margin-bottom: 16px; }
+        label {
+            display: block;
+            margin-bottom: 6px;
+            color: #aaa;
+            font-size: 0.9rem;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 8px;
+            background: rgba(0,0,0,0.3);
+            color: #fff;
+            font-size: 1rem;
+        }
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #00d4ff;
+        }
+        textarea { min-height: 100px; font-family: monospace; resize: vertical; }
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        .btn-primary {
+            background: linear-gradient(90deg, #00d4ff, #7b2cbf);
+            color: #fff;
+        }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 5px 20px rgba(0,212,255,0.4); }
+        .btn-secondary { background: rgba(255,255,255,0.1); color: #fff; }
+        .btn-secondary:hover { background: rgba(255,255,255,0.2); }
+        .btn-danger { background: #e74c3c; color: #fff; }
+        .btn-sm { padding: 8px 16px; font-size: 0.85rem; }
+        .bands-container { margin-top: 16px; }
+        .band-item {
+            background: rgba(0,0,0,0.2);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 10px;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr auto;
+            gap: 10px;
+            align-items: end;
+        }
+        .band-item input { padding: 8px; }
+        .output-section { margin-top: 20px; }
+        .output-tabs { display: flex; gap: 10px; margin-bottom: 10px; }
+        .tab-btn {
+            padding: 8px 16px;
+            background: rgba(255,255,255,0.1);
+            border: none;
+            border-radius: 8px;
+            color: #fff;
+            cursor: pointer;
+        }
+        .tab-btn.active { background: #00d4ff; color: #000; }
+        pre {
+            background: #0d1117;
+            border-radius: 8px;
+            padding: 16px;
+            overflow-x: auto;
+            font-size: 0.85rem;
+            line-height: 1.5;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        code { color: #c9d1d9; }
+        .keyword { color: #ff7b72; }
+        .string { color: #a5d6ff; }
+        .number { color: #79c0ff; }
+        .comment { color: #8b949e; }
+        .function { color: #d2a8ff; }
+        .copy-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 6px 12px;
+            background: rgba(255,255,255,0.1);
+            border: none;
+            border-radius: 4px;
+            color: #fff;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+        .copy-btn:hover { background: rgba(255,255,255,0.2); }
+        .pre-container { position: relative; }
+        .success-msg {
+            background: #27ae60;
+            color: #fff;
+            padding: 10px 16px;
+            border-radius: 8px;
+            margin-top: 10px;
+            display: none;
+        }
+        .row { display: flex; gap: 10px; }
+        .row > * { flex: 1; }
+        .help-text { font-size: 0.8rem; color: #888; margin-top: 4px; }
+        .section-divider {
+            border-top: 1px solid rgba(255,255,255,0.1);
+            margin: 20px 0;
+            padding-top: 20px;
+        }
+        .additional-rule-item {
+            background: rgba(0,0,0,0.2);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 10px;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr auto;
+            gap: 10px;
+            align-items: end;
+        }
+        .additional-rule-item input, .additional-rule-item select { padding: 8px; }
+        h3 { margin: 0; }
+</style>
+</head>
+<body>
+<div class="container">
+    <h1>🛠️ Tazama Rule Builder</h1>
+    <div class="grid">
+        <!-- LEFT PANEL: Form Input -->
+        <div class="left-panel">
+            <div class="card">
+                <h2>📋 Rule Information</h2>
+                <div class="row">
+                    <div class="form-group">
+                        <label>Rule Number</label>
+                        <input type="number" id="ruleNumber" value="905" min="900" max="999">
+                    </div>
+                    <div class="form-group">
+                        <label>Version</label>
+                        <input type="text" id="ruleVersion" value="1.0.0">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Rule Name</label>
+                    <input type="text" id="ruleName" placeholder="e.g., Large Transaction Detection">
+                </div>
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea id="ruleDesc" placeholder="Describe what this rule detects..."></textarea>
+                </div>
+            </div>
+
+            <div class="card" style="margin-top: 20px;">
+                <h2>⚙️ Logic Configuration</h2>
+                <div class="form-group">
+                    <label>Data Field to Evaluate</label>
+                    <select id="dataField">
+                        <option value="instdAmt.amt">Amount (instdAmt.amt)</option>
+                        <option value="intrBkSttlmAmt.amt">Settlement Amount</option>
+                        <option value="custom">Custom Field...</option>
+                    </select>
+                    <p class="help-text">Field from DataCache to evaluate</p>
+                </div>
+                <div class="form-group" id="customFieldGroup" style="display:none;">
+                    <label>Custom Field Path</label>
+                    <input type="text" id="customField" placeholder="e.g., myField.value">
+                </div>
+                <div class="form-group">
+                    <label>Logic Type</label>
+                    <select id="logicType">
+                        <option value="simple">Simple (Check single value)</option>
+                        <option value="count">Count (Query database)</option>
+                        <option value="custom">Custom Logic</option>
+                    </select>
+                </div>
+                <div class="form-group" id="timeWindowGroup" style="display:none;">
+                    <label>Time Window (milliseconds)</label>
+                    <input type="number" id="timeWindow" value="60000" min="1000">
+                    <p class="help-text">For count-based rules (e.g., 60000 = 1 minute)</p>
+                </div>
+            </div>
+
+            <div class="card" style="margin-top: 20px;">
+                <h2>📊 Scoring Bands</h2>
+                <p class="help-text" style="margin-bottom: 16px;">Define value ranges and their scores</p>
+                <div class="bands-container" id="bandsContainer"></div>
+                <button class="btn btn-secondary btn-sm" onclick="addBand()">+ Add Band</button>
+            </div>
+
+            <div class="card" style="margin-top: 20px;">
+                <h2>🔗 Typology Configuration</h2>
+                <div class="form-group">
+                    <label>Typology Name</label>
+                    <input type="text" id="typologyName" placeholder="e.g., Fraud-Detection">
+                    <p class="help-text">Name for the typology (can contain multiple rules)</p>
+                </div>
+                <div class="form-group">
+                    <label>Alert Threshold</label>
+                    <input type="number" id="alertThreshold" value="200" min="0">
+                    <p class="help-text">Score threshold for ALERT status</p>
+                </div>
+                <div class="form-group">
+                    <label>Interdiction Threshold</label>
+                    <input type="number" id="interdictionThreshold" value="400" min="0">
+                    <p class="help-text">Score threshold for INTERDICTION (block transaction)</p>
+                </div>
+                <div class="section-divider"></div>
+                <h3 style="font-size: 1rem; margin-bottom: 12px; color: #00d4ff;">Additional Rules in Typology</h3>
+                <p class="help-text" style="margin-bottom: 12px;">Add other rules to combine in this typology</p>
+                <div id="additionalRulesContainer"></div>
+                <button class="btn btn-secondary btn-sm" onclick="addAdditionalRule()">+ Add Rule to Typology</button>
+            </div>
+
+            <div style="margin-top: 20px; text-align: center;">
+                <button class="btn btn-primary" onclick="generateCode()">🚀 Generate Rule Code</button>
+            </div>
+        </div>
+
+        <!-- RIGHT PANEL: Output -->
+        <div class="right-panel">
+            <div class="card">
+                <h2>📄 Generated Output</h2>
+                <div class="output-tabs">
+                    <button class="tab-btn active" onclick="showTab('typescript')">TypeScript</button>
+                    <button class="tab-btn" onclick="showTab('config')">Config JSON</button>
+                    <button class="tab-btn" onclick="showTab('typology')">Typology</button>
+                    <button class="tab-btn" onclick="showTab('docker')">Docker</button>
+                </div>
+                <div class="pre-container">
+                    <button class="copy-btn" onclick="copyCode()">📋 Copy</button>
+                    <pre><code id="outputCode">// Click "Generate Rule Code" to see output</code></pre>
+                </div>
+                <div class="success-msg" id="successMsg">✅ Copied to clipboard!</div>
+            </div>
+
+            <div class="card" style="margin-top: 20px;">
+                <h2>📝 Quick Guide</h2>
+                <div style="font-size: 0.9rem; line-height: 1.8; color: #aaa;">
+                    <p><strong>1. Fill Rule Info</strong> - Name and describe your rule</p>
+                    <p><strong>2. Choose Logic</strong> - What data to check</p>
+                    <p><strong>3. Define Bands</strong> - Score ranges</p>
+                    <p><strong>4. Configure Typology</strong> - Add multiple rules</p>
+                    <p><strong>5. Generate</strong> - Get all files needed</p>
+                    <div class="section-divider"></div>
+                    <p><strong>Typology = Multiple Rules:</strong></p>
+                    <p>• Main rule (being created)</p>
+                    <p>• + Additional rules (903, 904, etc)</p>
+                    <p>• Each with weight (0.0 - 1.0)</p>
+                    <p>• Combined score → Alert/Block</p>
+                    <div class="section-divider"></div>
+                    <p><strong>Files Generated:</strong></p>
+                    <p>• <code>rule-XXX.ts</code> - Logic code</p>
+                    <p>• <code>config.json</code> - Database config</p>
+                    <p>• <code>typology.json</code> - Typology config</p>
+                    <p>• <code>Dockerfile</code> - Container build</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let currentTab = 'typescript';
+let generatedCode = { typescript: '', config: '', typology: '', docker: '' };
+
+// Initialize with default bands
+document.addEventListener('DOMContentLoaded', () => {
+    addBand(0, 1000000, 'Normal - under 1M');
+    addBand(1000000, 5000000, 'Medium - 1M to 5M');
+    addBand(5000000, 10000000, 'Large - 5M to 10M');
+    addBand(10000000, 999999999999, 'Critical - over 10M');
+    
+    document.getElementById('dataField').addEventListener('change', (e) => {
+        document.getElementById('customFieldGroup').style.display = 
+            e.target.value === 'custom' ? 'block' : 'none';
+    });
+    
+    document.getElementById('logicType').addEventListener('change', (e) => {
+        document.getElementById('timeWindowGroup').style.display = 
+            e.target.value === 'count' ? 'block' : 'none';
+    });
+});
+
+function addBand(lower = '', upper = '', reason = '') {
+    const container = document.getElementById('bandsContainer');
+    const index = container.children.length;
+    const div = document.createElement('div');
+    div.className = 'band-item';
+    div.innerHTML = `
+        <div class="form-group">
+            <label>Min Value</label>
+            <input type="number" class="band-lower" value="${lower}" placeholder="0">
+        </div>
+        <div class="form-group">
+            <label>Max Value</label>
+            <input type="number" class="band-upper" value="${upper}" placeholder="1000000">
+        </div>
+        <div class="form-group">
+            <label>Reason</label>
+            <input type="text" class="band-reason" value="${reason}" placeholder="Description">
+        </div>
+        <button class="btn btn-danger btn-sm" onclick="this.parentElement.remove()">✕</button>
+    `;
+    container.appendChild(div);
+}
+
+function addAdditionalRule(ruleId = '', ruleVersion = '1.0.0', weight = '1.0') {
+    const container = document.getElementById('additionalRulesContainer');
+    const div = document.createElement('div');
+    div.className = 'additional-rule-item';
+    div.innerHTML = `
+        <div class="form-group">
+            <label>Rule ID</label>
+            <input type="text" class="add-rule-id" value="${ruleId}" placeholder="e.g., 903">
+        </div>
+        <div class="form-group">
+            <label>Version</label>
+            <input type="text" class="add-rule-version" value="${ruleVersion}" placeholder="1.0.0">
+        </div>
+        <div class="form-group">
+            <label>Weight</label>
+            <input type="number" class="add-rule-weight" value="${weight}" step="0.1" min="0" max="1" placeholder="1.0">
+        </div>
+        <button class="btn btn-danger btn-sm" onclick="this.parentElement.remove()">✕</button>
+    `;
+    container.appendChild(div);
+}
+
+function getBands() {
+    const bands = [];
+    document.querySelectorAll('.band-item').forEach((item, i) => {
+        bands.push({
+            subRuleRef: `.0${i + 1}`,
+            lowerLimit: parseInt(item.querySelector('.band-lower').value) || 0,
+            upperLimit: parseInt(item.querySelector('.band-upper').value) || 0,
+            reason: item.querySelector('.band-reason').value || `Band ${i + 1}`
+        });
+    });
+    return bands;
+}
+
+function getWeights() {
+    return getBands().map((band, i) => ({
+        ref: band.subRuleRef,
+        wght: String(i * 100)
+    }));
+}
+
+function getAdditionalRules() {
+    const rules = [];
+    document.querySelectorAll('.additional-rule-item').forEach(item => {
+        const ruleId = item.querySelector('.add-rule-id').value;
+        const ruleVersion = item.querySelector('.add-rule-version').value;
+        const weight = item.querySelector('.add-rule-weight').value;
+        if (ruleId) {
+            rules.push({
+                id: `${ruleId}@${ruleVersion}`,
+                cfg: ruleVersion,
+                weight: parseFloat(weight) || 1.0
+            });
+        }
+    });
+    return rules;
+}
+
+function generateCode() {
+    const ruleNum = document.getElementById('ruleNumber').value;
+    const ruleVersion = document.getElementById('ruleVersion').value;
+    const ruleName = document.getElementById('ruleName').value || `Rule ${ruleNum}`;
+    const ruleDesc = document.getElementById('ruleDesc').value || 'Custom rule';
+    const dataField = document.getElementById('dataField').value;
+    const customField = document.getElementById('customField').value;
+    const logicType = document.getElementById('logicType').value;
+    const timeWindow = document.getElementById('timeWindow').value;
+    const typologyName = document.getElementById('typologyName').value || `${ruleNum}-${ruleName.replace(/\s+/g, '-')}`;
+    const alertThreshold = document.getElementById('alertThreshold').value;
+    const interdictionThreshold = document.getElementById('interdictionThreshold').value;
+    const bands = getBands();
+    const weights = getWeights();
+    const additionalRules = getAdditionalRules();
+    
+    const field = dataField === 'custom' ? customField : dataField;
+    const fieldPath = field.split('.').map(f => `?.${f}`).join('');
+    
+    // Generate TypeScript
+    generatedCode.typescript = generateTypeScript(ruleNum, ruleName, ruleDesc, field, fieldPath, logicType, timeWindow);
+    
+    // Generate Config JSON
+    generatedCode.config = generateConfig(ruleNum, ruleVersion, ruleDesc, bands, logicType, timeWindow);
+    
+    // Generate Typology JSON
+    generatedCode.typology = generateTypology(ruleNum, ruleVersion, typologyName, weights, additionalRules, alertThreshold, interdictionThreshold);
+    
+    // Generate Dockerfile
+    generatedCode.docker = generateDockerfile(ruleNum);
+    
+    showTab(currentTab);
+}
+
+function generateTypeScript(ruleNum, ruleName, ruleDesc, field, fieldPath, logicType, timeWindow) {
+    let logicCode = '';
+    
+    if (logicType === 'simple') {
+        logicCode = `
+  // Get value to evaluate
+  const value = req.DataCache${fieldPath} || 0;
+  
+  loggerService.trace(\`Evaluating ${field}: \${value}\`, context, msgId);
+  
+  // Evaluate against bands
+  return determineOutcome(value, ruleConfig, ruleRes);`;
+    } else if (logicType === 'count') {
+        logicCode = `
+  // Get debtor account for counting
+  const debtorAccountId = req.DataCache?.dbtrAcctId;
+  if (!debtorAccountId) {
+    return determineOutcome(1, ruleConfig, ruleRes);
+  }
+  
+  const currentTimestamp = req.transaction.FIToFIPmtSts?.GrpHdr?.CreDtTm || new Date().toISOString();
+  const timeWindowMs = ruleConfig.config.parameters?.timeWindowMs || ${timeWindow};
+  const tenantId = req.transaction.TenantId || 'DEFAULT';
+  
+  // Query previous transactions
+  const query = \`SELECT COUNT(*)::int AS length FROM transaction tr
+    WHERE tr.destination = $1 AND tr."txtp" = 'pacs.002.001.12'
+    AND ($2::timestamptz - tr."credttm"::timestamptz) <= $3 * interval '1 millisecond'
+    AND tr.tenantId = $4;\`;
+  
+  let count = 1;
+  try {
+    const res = await databaseManager._eventHistory.query(query, [debtorAccountId, currentTimestamp, timeWindowMs, tenantId]);
+    if (res.rows?.[0]) count = res.rows[0].length || 1;
+  } catch (e) {
+    loggerService.error(\`Query error: \${e}\`, context, msgId);
+  }
+  
+  loggerService.trace(\`Transaction count: \${count}\`, context, msgId);
+  return determineOutcome(count, ruleConfig, ruleRes);`;
+    } else {
+        logicCode = `
+  // Custom logic - modify as needed
+  const value = req.DataCache${fieldPath} || 0;
+  
+  // Add your custom logic here
+  // Example: check multiple conditions
+  // const condition1 = ...;
+  // const condition2 = ...;
+  
+  return determineOutcome(value, ruleConfig, ruleRes);`;
+    }
+
+    return `// SPDX-License-Identifier: Apache-2.0
+// Rule ${ruleNum}: ${ruleName}
+// ${ruleDesc}
+
+import type { DatabaseManagerInstance, LoggerService, ManagerConfig } from '@tazama-lf/frms-coe-lib';
+import type { OutcomeResult, RuleConfig, RuleRequest, RuleResult } from '@tazama-lf/frms-coe-lib/lib/interfaces';
+
+export type RuleExecutorConfig = ManagerConfig &
+  Required<Pick<ManagerConfig, 'rawHistory' | 'eventHistory' | 'configuration' | 'localCacheConfig'>>;
+
+export async function handleTransaction(
+  req: RuleRequest,
+  determineOutcome: (value: number, ruleConfig: RuleConfig, ruleResult: RuleResult) => RuleResult,
+  ruleRes: RuleResult,
+  loggerService: LoggerService,
+  ruleConfig: RuleConfig,
+  databaseManager: DatabaseManagerInstance<RuleExecutorConfig>,
+): Promise<RuleResult> {
+  const context = \`Rule-\${ruleConfig.id} handleTransaction()\`;
+  const msgId = req.transaction.FIToFIPmtSts?.GrpHdr?.MsgId || 'unknown';
+
+  loggerService.trace('Start - ${ruleName}', context, msgId);
+
+  // Validate config
+  if (!ruleConfig.config.bands?.length) {
+    throw new Error('Invalid ruleConfig - bands not provided');
+  }
+  if (!ruleConfig.config.exitConditions) {
+    throw new Error('Invalid ruleConfig - exitConditions not provided');
+  }
+
+  // Exit condition: unsuccessful transaction
+  const unsuccessfulTx = ruleConfig.config.exitConditions.find(
+    (b: OutcomeResult) => b.subRuleRef === '.x00'
+  );
+
+  if (req.transaction.FIToFIPmtSts?.TxInfAndSts?.TxSts !== 'ACCC') {
+    if (!unsuccessfulTx) throw new Error('No exit condition for unsuccessful transaction');
+    return { ...ruleRes, reason: unsuccessfulTx.reason, subRuleRef: unsuccessfulTx.subRuleRef };
+  }
+${logicCode}
+}
+`;
+}
+
+function generateConfig(ruleNum, ruleVersion, ruleDesc, bands, logicType, timeWindow) {
+    const config = {
+        id: `${ruleNum}@${ruleVersion}`,
+        cfg: ruleVersion,
+        desc: ruleDesc,
+        tenantId: "DEFAULT",
+        config: {
+            parameters: logicType === 'count' ? { timeWindowMs: parseInt(timeWindow) } : {},
+            bands: bands,
+            exitConditions: [
+                { subRuleRef: ".x00", reason: "Unsuccessful transaction" }
+            ]
+        }
+    };
+    return JSON.stringify(config, null, 2);
+}
+
+function generateTypology(ruleNum, ruleVersion, typologyName, weights, additionalRules, alertThreshold, interdictionThreshold) {
+    // Main rule being created
+    const mainRule = {
+        id: `${ruleNum}@${ruleVersion}`,
+        cfg: ruleVersion,
+        termId: `v${ruleNum}at${ruleVersion.replace(/\./g, '')}`,
+        wghts: [
+            { ref: ".err", wght: "0" },
+            { ref: ".x00", wght: "0" },
+            ...weights
+        ]
+    };
+    
+    // Additional rules with their weights
+    const additionalRuleConfigs = additionalRules.map(rule => {
+        const ruleId = rule.id.split('@')[0];
+        const version = rule.cfg.replace(/\./g, '');
+        return {
+            id: rule.id,
+            cfg: rule.cfg,
+            termId: `v${ruleId}at${version}`,
+            wghts: [
+                { ref: ".err", wght: "0" },
+                { ref: ".x00", wght: "0" },
+                { ref: ".01", wght: "0" },
+                { ref: ".02", wght: String(Math.round(100 * rule.weight)) },
+                { ref: ".03", wght: String(Math.round(300 * rule.weight)) },
+                { ref: ".04", wght: String(Math.round(500 * rule.weight)) }
+            ]
+        };
+    });
+    
+    // Expression: Add all rule terms
+    const expressionTerms = [
+        `v${ruleNum}at${ruleVersion.replace(/\./g, '')}`,
+        ...additionalRules.map(rule => {
+            const ruleId = rule.id.split('@')[0];
+            const version = rule.cfg.replace(/\./g, '');
+            return `v${ruleId}at${version}`;
+        })
+    ];
+    
+    const typology = {
+        id: "typology-processor@1.0.0",
+        cfg: typologyName,
+        tenantId: "DEFAULT",
+        rules: [
+            mainRule,
+            ...additionalRuleConfigs,
+            {
+                id: "EFRuP@1.0.0",
+                cfg: "none",
+                termId: "vEFRuPatnone",
+                wghts: [{ ref: "none", wght: "0" }]
+            }
+        ],
+        expression: expressionTerms.length > 1 ? ["Add", ...expressionTerms] : ["Add", expressionTerms[0]],
+        workflow: {
+            flowProcessor: "EFRuP@1.0.0",
+            alertThreshold: parseInt(alertThreshold) || 200,
+            interdictionThreshold: parseInt(interdictionThreshold) || 400
+        },
+        typology_name: typologyName
+    };
+    return JSON.stringify(typology, null, 2);
+}
+
+function generateDockerfile(ruleNum) {
+    return `FROM node:20-alpine AS builder
+
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+RUN npm ci
+
+# Copy source and build
+COPY . .
+RUN npm run build
+
+# Production stage
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Copy built files
+COPY --from=builder /app/lib ./lib
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/package.json ./
+
+# Environment
+ENV NODE_ENV=production
+ENV FUNCTION_NAME=rule-${ruleNum}-rel-1-0-0
+ENV RULE_NAME=${ruleNum}@1.0.0
+
+EXPOSE 3000
+
+CMD ["node", "lib/index.js"]
+`;
+}
+
+function showTab(tab) {
+    currentTab = tab;
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.textContent.toLowerCase().includes(tab));
+    });
+    
+    const code = generatedCode[tab] || '// Click "Generate Rule Code" to see output';
+    document.getElementById('outputCode').innerHTML = highlightSyntax(code, tab);
+}
+
+function highlightSyntax(code, type) {
+    if (type === 'typescript') {
+        return code
+            .replace(/\/\/.*/g, '<span class="comment">$&</span>')
+            .replace(/\b(import|export|async|function|const|let|if|return|throw|new|type|from)\b/g, '<span class="keyword">$1</span>')
+            .replace(/\b(true|false|null|undefined)\b/g, '<span class="keyword">$1</span>')
+            .replace(/'[^']*'/g, '<span class="string">$&</span>')
+            .replace(/`[^`]*`/g, '<span class="string">$&</span>')
+            .replace(/\b(\d+)\b/g, '<span class="number">$1</span>');
+    }
+    return code;
+}
+
+function copyCode() {
+    const code = generatedCode[currentTab];
+    navigator.clipboard.writeText(code).then(() => {
+        const msg = document.getElementById('successMsg');
+        msg.style.display = 'block';
+        setTimeout(() => msg.style.display = 'none', 2000);
+    });
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,40 @@
+{
+  "id": "typology-processor@1.0.0",
+  "cfg": "904-Rapid-Transaction",
+  "typology_name": "Rapid-Transaction-Alert",
+  "tenantId": "DEFAULT",
+  "rules": [
+    {
+      "id": "904@1.0.0",
+      "cfg": "1.0.0",
+      "termId": "v904at100at100",
+      "wghts": [
+        {"ref": ".err", "wght": "0"},
+        {"ref": ".x00", "wght": "0"},
+        {"ref": ".00", "wght": "0"},
+        {"ref": ".01", "wght": "0"},
+        {"ref": ".02", "wght": "200"},
+        {"ref": ".03", "wght": "400"},
+        {"ref": ".04", "wght": "600"}
+      ]
+    },
+    {
+      "id": "EFRuP@1.0.0",
+      "cfg": "none",
+      "termId": "vEFRuPat100atnone",
+      "wghts": [
+        {"ref": ".err", "wght": "0"},
+        {"ref": "override", "wght": "0"},
+        {"ref": "non-overridable-block", "wght": "0"},
+        {"ref": "overridable-block", "wght": "0"},
+        {"ref": "none", "wght": "0"}
+      ]
+    }
+  ],
+  "expression": ["Add", "v904at100at100"],
+  "workflow": {
+    "flowProcessor": "EFRuP@1.0.0",
+    "alertThreshold": 200,
+    "interdictionThreshold": 400
+  }
+}

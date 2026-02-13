@@ -1,0 +1,59 @@
+{
+  "info": {
+    "_postman_id": "demo-tazama-custom-rules",
+    "name": "Demo Tazama Custom Rules (903 & 904)",
+    "description": "Collection untuk demo Rule 903 (Large Transaction) dan Rule 904 (Rapid Transaction)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. Health Check",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{tmsUrl}}/v1/health",
+          "host": ["{{tmsUrl}}"],
+          "path": ["v1", "health"]
+        }
+      }
+    },
+    {
+      "name": "2. Transaksi Normal (Rp 500.000) - NALT",
+      "item": [
+        {
+          "name": "2a. Send pacs.008 - Normal",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{{pacs008_normal}}"
+            },
+            "url": {
+              "raw": "{{tmsUrl}}/v1/evaluate/iso20022/pacs.008.001.10",
+              "host": ["{{tmsUrl}}"],
+              "path": ["v1", "evaluate", "iso20022", "pacs.008.001.10"]
+            }
+          }
+        },
+        {
+          "name": "2b. Send pacs.002 - Normal",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{{pacs002_normal}}"
+            },
+            "url": {
+              "raw": "{{tmsUrl}}/v1/evaluate/iso20022/pacs.002.001.12",
+              "host": ["{{tmsUrl}}"],
+              "path": ["v1", "evaluate", "iso20022", "pacs.002.001.12"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

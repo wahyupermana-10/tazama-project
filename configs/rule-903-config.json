@@ -1,0 +1,40 @@
+{
+  "id": "903@1.0.0",
+  "cfg": "1.0.0",
+  "desc": "Large Transaction Detection - Mendeteksi transaksi dengan jumlah besar",
+  "tenantId": "DEFAULT",
+  "config": {
+    "bands": [
+      {
+        "subRuleRef": ".01",
+        "lowerLimit": 0,
+        "upperLimit": 1000000,
+        "reason": "Normal transaction - under 1M"
+      },
+      {
+        "subRuleRef": ".02",
+        "lowerLimit": 1000000,
+        "upperLimit": 5000000,
+        "reason": "Medium transaction - 1M to 5M"
+      },
+      {
+        "subRuleRef": ".03",
+        "lowerLimit": 5000000,
+        "upperLimit": 10000000,
+        "reason": "Large transaction - 5M to 10M - ALERT"
+      },
+      {
+        "subRuleRef": ".04",
+        "lowerLimit": 10000000,
+        "upperLimit": 999999999999,
+        "reason": "Very large transaction - over 10M - INTERDICTION"
+      }
+    ],
+    "exitConditions": [
+      {
+        "subRuleRef": ".x00",
+        "reason": "Unsuccessful transaction"
+      }
+    ]
+  }
+}

@@ -1,0 +1,48 @@
+# SPDX-License-Identifier: Apache-2.0
+# Rule 903 - Large Transaction Detection
+
+FROM node:20-alpine
+
+WORKDIR /home/app
+
+# Copy pre-built files
+COPY build ./build
+COPY node_modules ./node_modules
+COPY package.json ./
+
+ENV NODE_ENV=production
+ENV FUNCTION_NAME="rule-903-rel-1-0-0"
+ENV RULE_VERSION="1.0.0"
+ENV RULE_NAME="903"
+ENV MAX_CPU=1
+
+# APM Configuration
+ENV APM_ACTIVE=false
+ENV APM_SERVICE_NAME="rule-903"
+ENV APM_URL=http://apm:8200
+ENV APM_SECRET_TOKEN=
+
+# Database
+ENV CONFIGURATION_DATABASE=configuration
+ENV CONFIGURATION_DATABASE_HOST=postgres
+ENV CONFIGURATION_DATABASE_PORT=5432
+ENV EVENT_HISTORY_DATABASE=event_history
+ENV EVENT_HISTORY_DATABASE_HOST=postgres
+ENV EVENT_HISTORY_DATABASE_PORT=5432
+ENV RAW_HISTORY_DATABASE=raw_history
+ENV RAW_HISTORY_DATABASE_HOST=postgres
+ENV RAW_HISTORY_DATABASE_PORT=5432
+
+# Cache
+ENV LOCAL_CACHETTL=300
+ENV LOCAL_CACHE_ENABLED=true
+
+# NATS
+ENV STARTUP_TYPE=nats
+ENV SERVER_URL=nats:4222
+
+# Logging
+ENV LOG_LEVEL=info
+ENV SUPPRESS_ALERTS=true
+
+CMD ["node", "build/index.js"]

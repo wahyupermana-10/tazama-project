@@ -1,0 +1,39 @@
+{
+  "id": "typology-processor@1.0.0",
+  "cfg": "903-Large-Transaction",
+  "typology_name": "Large-Transaction-Alert",
+  "tenantId": "DEFAULT",
+  "rules": [
+    {
+      "id": "903@1.0.0",
+      "cfg": "1.0.0",
+      "termId": "v903at100at100",
+      "wghts": [
+        {"ref": ".err", "wght": "0"},
+        {"ref": ".x00", "wght": "0"},
+        {"ref": ".01", "wght": "0"},
+        {"ref": ".02", "wght": "100"},
+        {"ref": ".03", "wght": "300"},
+        {"ref": ".04", "wght": "500"}
+      ]
+    },
+    {
+      "id": "EFRuP@1.0.0",
+      "cfg": "none",
+      "termId": "vEFRuPat100atnone",
+      "wghts": [
+        {"ref": ".err", "wght": "0"},
+        {"ref": "override", "wght": "0"},
+        {"ref": "non-overridable-block", "wght": "0"},
+        {"ref": "overridable-block", "wght": "0"},
+        {"ref": "none", "wght": "0"}
+      ]
+    }
+  ],
+  "expression": ["Add", "v903at100at100"],
+  "workflow": {
+    "flowProcessor": "EFRuP@1.0.0",
+    "alertThreshold": 200,
+    "interdictionThreshold": 400
+  }
+}

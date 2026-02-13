@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tazama Demo - Fraud Detection with Flow Animation</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', sans-serif; background: #0a0a1a; color: #eee; min-height: 100vh; }
+        .container { max-width: 1400px; margin: 0 auto; padding: 15px; }
+        h1 { text-align: center; color: #00d9ff; margin-bottom: 5px; font-size: 1.5em; }
+        .subtitle { text-align: center; color: #888; margin-bottom: 20px; font-size: 0.9em; }
+        
+        /* Flow Diagram Styles */
+        .flow-container { background: #111; border-radius: 12px; padding: 20px; margin-bottom: 20px; position: relative; }
+        .flow-title { color: #00d9ff; font-size: 1em; margin-bottom: 15px; }
+        
+        .flow-diagram { display: flex; align-items: center; justify-content: space-between; position: relative; min-height: 120px; }
+        .flow-node { 
+            background: #1a1a2e; border: 2px solid #333; border-radius: 10px; padding: 12px 15px; 
+            text-align: center; min-width: 100px; position: relative; z-index: 2; transition: all 0.3s;
+            cursor: help;
+        }
+        .flow-node.active { border-color: #00d9ff; box-shadow: 0 0 20px rgba(0,217,255,0.5); transform: scale(1.05); }
+        .flow-node.success { border-color: #2ed573; box-shadow: 0 0 20px rgba(46,213,115,0.5); }
+        .flow-node.alert { border-color: #ff4757; box-shadow: 0 0 20px rgba(255,71,87,0.5); }
+        .flow-node .icon { font-size: 1.5em; margin-bottom: 5px; }
+        .flow-node .label { font-size: 0.75em; color: #aaa; }
+        .flow-node .status { font-size: 0.65em; color: #666; margin-top: 3px; }
+        
+        /* Tooltip Styles - Info Panel */
+        .flow-info-panel {
+            background: linear-gradient(135deg, #1e3a5f, #16213e);
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 12px 15px;
+            margin-top: 15px;
+            min-height: 60px;
+            transition: all 0.3s ease;
+        }
+        .flow-info-panel .info-title {
+            color: #00d9ff;
+            font-weight: bold;
+            font-size: 0.9em;
+            margin-bottom: 5px;
+        }
+        .flow-info-panel .info-desc {
+            color: #aaa;
+            font-size: 0.8em;
+            line-height: 1.4;
+        }
+        .flow-info-panel.highlight {
+            border-color: #00d9ff;
+            box-shadow: 0 0 10px rgba(0,217,255,0.3);
+        }
+        .flow-node {
+            cursor: pointer;
+        }
+        .flow-node:hover {
+            border-color: #00d9ff !important;
+        }
+</style>
+</head>
+<body>
+    <div class="container">
+        <h1>🛡️ Tazama Fraud Detection Demo</h1>
+        <p class="subtitle">Real-time Transaction Monitoring with Flow Visualization</p>
+        
+        <!-- Flow Animation Section -->
+        <div class="flow-container">
+            <div class="flow-title">📊 Transaction Processing Flow</div>
+            <div class="flow-diagram" id="flowDiagram">
+                <div class="flow-node" id="node-bank" data-info="bank">
+                    <div class="icon">🏦</div>
+                    <div class="label">Bank</div>
+                    <div class="status" id="status-bank">Ready</div>
+                </div>
+                <div class="flow-arrow" id="arrow1">→</div>
+                <div class="flow-node" id="node-tms" data-info="tms">
+                    <div class="icon">📥</div>
+                    <div class="label">TMS API</div>
+                    <div class="status" id="status-tms">Waiting</div>
+                </div>
+                <div class="flow-arrow" id="arrow2">→</div>
+                <div class="flow-node" id="node-ed" data-info="ed">
+                    <div class="icon">🔀</div>
+                    <div class="label">Event Director</div>
+                    <div class="status" id="status-ed">Waiting</div>
+                </div>
+                <div class="flow-arrow" id="arrow3">→</div>
+                <div class="flow-node" id="node-rules" data-info="rules">
+                    <div class="icon">📋</div>
+                    <div class="label">Rules</div>
+                    <div class="status" id="status-rules">Waiting</div>
+                </div>
+                <div class="flow-arrow" id="arrow4">→</div>
+                <div class="flow-node" id="node-tp" data-info="tp">
+                    <div class="icon">🧮</div>
+                    <div class="label">Typology</div>
+                    <div class="status" id="status-tp">Waiting</div>
+                </div>
+                <div class="flow-arrow" id="arrow5">→</div>
+                <div class="flow-node" id="node-tadp" data-info="tadp">
+                    <div class="icon">⚖️</div>
+                    <div class="label">Decision</div>
+                    <div class="status" id="status-tadp">Waiting</div>
+                </div>
+                <div class="flow-arrow" id="arrow6">→</div>
+                <div class="flow-node" id="node-result" data-info="result">
+                    <div class="icon" id="result-icon">❓</div>
+                    <div class="label">Result</div>
+                    <div class="status" id="status-result">Waiting</div>
+                </div>
+            </div>
+            
+            <!-- Info Panel -->
+            <div class="flow-info-panel" id="flowInfoPanel">
+                <div class="info-title" id="infoTitle">ℹ️ Hover pada komponen untuk melihat penjelasan</div>
+                <div class="info-desc" id="infoDesc">Setiap kotak mewakili satu tahap dalam proses evaluasi transaksi fraud detection.</div>
+            </div>
+            </div>
+            
+            <!-- Processing Log -->
+            <div class="processing-log" id="processingLog">
+                <div class="log-entry">💡 Klik "Kirim Transaksi" untuk melihat alur proses</div>
+            </div>
+        </div>
+
+        <div class="main-grid">
+            <!-- Left: Transaction Form -->
+            <div class="card">
+                <h2>💸 Kirim Transaksi</h2>
+                <div class="preset-btns">
+                    <button class="btn btn-primary" onclick="setPreset('normal')">✅ Normal (500K)</button>
+                    <button class="btn btn-danger" onclick="setPreset('large')">💰 Large (15M)</button>
+                    <button class="btn btn-warning" onclick="setPreset('rapid')">⚡ Rapid</button>
+                    <button class="btn btn-secondary" onclick="resetRapid()">🔄 Reset</button>
+                </div>
+                <div id="rapidInfo" style="display:none; background:#2d3a5a; padding:8px; border-radius:6px; margin-bottom:10px; font-size:0.8em;">
+                    <span style="color:#ffa502">⚡ Rapid Mode</span>
+                    <span id="rapidCounter" style="float:right;">TX #1</span>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Pengirim</label>
+                        <input type="text" id="debtorName" value="John Doe" />
+                    </div>
+                    <div class="form-group">
+                        <label>ID Pengirim</label>
+                        <input type="text" id="debtorId" value="USER_001" />
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Penerima</label>
+                        <input type="text" id="creditorName" value="Jane Smith" />
+                    </div>
+                    <div class="form-group">
+                        <label>Jumlah (IDR)</label>
+                        <input type="number" id="amount" value="500000" />
+                    </div>
+                </div>
+                <button class="btn btn-primary btn-full" id="sendBtn" onclick="sendTransaction()">🚀 Kirim Transaksi</button>
+            </div>
+
+            <!-- Middle: Result -->
+            <div class="card">
+                <h2>📊 Hasil Evaluasi</h2>
+                <div class="result-box" id="resultBox">
+                    <p class="placeholder">Hasil akan muncul di sini</p>
+                </div>
+            </div>
+
+            <!-- Right: Rules Info -->
+            <div class="card">
+                <h2>📋 Active Rules</h2>
+                <div class="rule-mini">
+                    <span class="rule-name">🔴 Rule 903</span>
+                    <span class="rule-desc">Large Transaction</span>
+                </div>
+                <div class="rule-mini">
+                    <span class="rule-name">🟡 Rule 904</span>
+                    <span class="rule-desc">Rapid Transaction</span>
+                </div>
+                <div class="threshold-info">
+                    <div><span class="dot yellow"></span> Alert ≥ 200</div>
+                    <div><span class="dot red"></span> Block ≥ 400</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- History -->
+        <div class="card" style="margin-top:15px;">
+            <h2>📜 Riwayat (10 terakhir)</h2>
+            <div class="history-grid" id="historyList">
+                <p class="placeholder">Belum ada transaksi</p>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        /* Additional Styles */
+        .flow-arrow { color: #333; font-size: 1.5em; transition: color 0.3s; }
+        .flow-arrow.active { color: #00d9ff; animation: pulse 0.5s infinite; }
+        @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
+        
+        .processing-log { 
+            margin-top: 15px; background: #0a0a15; border-radius: 8px; padding: 10px; 
+            max-height: 80px; overflow-y: auto; font-family: monospace; font-size: 0.75em;
+        }
+        .log-entry { padding: 3px 0; color: #888; border-bottom: 1px solid #1a1a2e; }
+        .log-entry:last-child { border-bottom: none; }
+        .log-entry.highlight { color: #00d9ff; }
+        .log-entry.success { color: #2ed573; }
+        .log-entry.alert { color: #ff4757; }
+        
+        .main-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; }
+        @media (max-width: 1000px) { .main-grid { grid-template-columns: 1fr; } }
+        
+        .card { background: #16213e; border-radius: 10px; padding: 15px; }
+        .card h2 { color: #00d9ff; font-size: 1em; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #333; }
+        
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .form-group { margin-bottom: 10px; }
+        .form-group label { display: block; color: #888; font-size: 0.8em; margin-bottom: 4px; }
+        .form-group input { width: 100%; padding: 8px; border: 1px solid #333; border-radius: 6px; background: #1a1a2e; color: #fff; font-size: 0.9em; }
+        .form-group input:focus { outline: none; border-color: #00d9ff; }
+        
+        .btn { padding: 8px 12px; border: none; border-radius: 6px; cursor: pointer; font-size: 0.85em; font-weight: bold; transition: all 0.2s; }
+        .btn-primary { background: #00d9ff; color: #000; }
+        .btn-danger { background: #ff4757; color: #fff; }
+        .btn-warning { background: #ffa502; color: #000; }
+        .btn-secondary { background: #555; color: #fff; }
+        .btn:hover { opacity: 0.9; transform: translateY(-1px); }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+        .btn-full { width: 100%; padding: 12px; margin-top: 5px; }
+        
+        .preset-btns { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 12px; }
+        .preset-btns .btn { padding: 6px 8px; font-size: 0.75em; }
+
+        .result-box { min-height: 150px; }
+        .result-box .placeholder { color: #555; text-align: center; padding: 50px 0; }
+        .result-box .status-big { font-size: 1.8em; font-weight: bold; text-align: center; padding: 20px; border-radius: 8px; margin-bottom: 10px; }
+        .status-big.NALT { background: linear-gradient(135deg, #2ed573, #1e9e50); color: #000; }
+        .status-big.ALRT { background: linear-gradient(135deg, #ff4757, #c0392b); color: #fff; }
+        
+        .result-details { font-size: 0.85em; }
+        .result-details .row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #333; }
+        .result-details .row:last-child { border-bottom: none; }
+        .result-details .label { color: #888; }
+        .result-details .value { color: #fff; font-weight: bold; }
+        
+        .rule-mini { display: flex; justify-content: space-between; background: #1a1a2e; padding: 8px 10px; border-radius: 6px; margin-bottom: 8px; font-size: 0.85em; }
+        .rule-name { color: #ffd700; }
+        .rule-desc { color: #888; }
+        
+        .threshold-info { display: flex; gap: 15px; margin-top: 10px; font-size: 0.8em; color: #888; }
+        .dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 5px; }
+        .dot.yellow { background: #ffa502; }
+        .dot.red { background: #ff4757; }
+        
+        .history-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; max-height: 150px; overflow-y: auto; }
+        .history-item { background: #1a1a2e; padding: 10px; border-radius: 6px; font-size: 0.8em; }
+        .history-item .top { display: flex; justify-content: space-between; margin-bottom: 5px; }
+        .history-item .amount { color: #ffd700; font-weight: bold; }
+        .history-item .badge { padding: 2px 8px; border-radius: 4px; font-size: 0.75em; font-weight: bold; }
+        .badge.NALT { background: #2ed573; color: #000; }
+        .badge.ALRT { background: #ff4757; color: #fff; }
+        .history-item .meta { color: #666; font-size: 0.75em; }
+    </style>
+
+    <script>
+        const TMS_URL = 'http://localhost:5000';
+        const HASURA_URL = 'http://localhost:6100';
+        let txCounter = Date.now();
+        let history = [];
+        let rapidDebtorId = null;
+        let rapidTxCount = 0;
+
+        // Node info descriptions
+        const nodeInfo = {
+            bank: {
+                title: '🏦 Bank / Financial Service Provider',
+                desc: 'Sistem perbankan yang mengirim data transaksi ke Tazama dalam format ISO 20022. Mengirim pacs.008 (instruksi transfer) dan pacs.002 (konfirmasi status) untuk setiap transaksi.'
+            },
+            tms: {
+                title: '📥 TMS (Transaction Monitoring Service)',
+                desc: 'Gerbang masuk utama Tazama. Menerima transaksi dari bank, memvalidasi format ISO 20022, dan meneruskan ke Event Director untuk diproses lebih lanjut.'
+            },
+            ed: {
+                title: '🔀 Event Director',
+                desc: 'Otak routing sistem. Membaca konfigurasi Network Map untuk menentukan rules mana yang harus mengevaluasi transaksi ini berdasarkan tipe dan karakteristiknya.'
+            },
+            rules: {
+                title: '📋 Rules Engine',
+                desc: 'Menjalankan aturan deteksi fraud. Contoh: Rule 903 mendeteksi nominal besar (>10jt = skor 500), Rule 904 mendeteksi transaksi berulang cepat. Setiap rule menghasilkan skor risiko 0-1000.'
+            },
+            tp: {
+                title: '🧮 Typology Processor',
+                desc: 'Menggabungkan skor dari berbagai rules dengan formula tertentu. Misalnya: Typology "Large Transaction" = Rule903 × 1.0. Menghasilkan skor akhir per kategori fraud.'
+            },
+            tadp: {
+                title: '⚖️ TADP (Transaction Aggregation & Decision Processor)',
+                desc: 'Pembuat keputusan akhir. Membandingkan skor typology dengan threshold: < 200 = APPROVE, 200-399 = ALERT (review manual), ≥ 400 = BLOCK (tolak transaksi).'
+            },
+            result: {
+                title: '📊 Hasil Evaluasi',
+                desc: 'Status akhir transaksi disimpan ke database PostgreSQL. ✅ NALT = Normal/Approved (transaksi aman). 🚨 ALRT = Alert/Blocked (terdeteksi mencurigakan, perlu investigasi).'
+            }
+        };
+
+        // Setup hover handlers for info panel
+        document.querySelectorAll('.flow-node[data-info]').forEach(node => {
+            node.addEventListener('mouseenter', () => {
+                const info = nodeInfo[node.dataset.info];
+                if (info) {
+                    document.getElementById('infoTitle').textContent = info.title;
+                    document.getElementById('infoDesc').textContent = info.desc;
+                    document.getElementById('flowInfoPanel').classList.add('highlight');
+                }
+            });
+            node.addEventListener('mouseleave', () => {
+                document.getElementById('infoTitle').textContent = 'ℹ️ Hover pada komponen untuk melihat penjelasan';
+                document.getElementById('infoDesc').textContent = 'Setiap kotak mewakili satu tahap dalam proses evaluasi transaksi fraud detection.';
+                document.getElementById('flowInfoPanel').classList.remove('highlight');
+            });
+        });
+
+        // Flow animation state
+        const nodes = ['bank', 'tms', 'ed', 'rules', 'tp', 'tadp', 'result'];
+        const arrows = ['arrow1', 'arrow2', 'arrow3', 'arrow4', 'arrow5', 'arrow6'];
+
+        function resetFlow() {
+            nodes.forEach(n => {
+                const el = document.getElementById('node-' + n);
+                el.classList.remove('active', 'success', 'alert');
+                document.getElementById('status-' + n).textContent = n === 'bank' ? 'Ready' : 'Waiting';
+            });
+            arrows.forEach(a => document.getElementById(a).classList.remove('active'));
+            document.getElementById('result-icon').textContent = '❓';
+        }
+
+        function animateNode(nodeId, status, isAlert = false) {
+            const node = document.getElementById('node-' + nodeId);
+            const statusEl = document.getElementById('status-' + nodeId);
+            
+            node.classList.add('active');
+            statusEl.textContent = status;
+            
+            // Non-blocking: schedule the completion
+            setTimeout(() => {
+                node.classList.remove('active');
+                node.classList.add(isAlert ? 'alert' : 'success');
+            }, 150);
+        }
+
+        function animateArrow(arrowId) {
+            const arrow = document.getElementById(arrowId);
+            arrow.classList.add('active');
+            setTimeout(() => arrow.classList.remove('active'), 200);
+        }
+
+        function addLog(message, type = '') {
+            const log = document.getElementById('processingLog');
+            const entry = document.createElement('div');
+            entry.className = 'log-entry ' + type;
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            log.insertBefore(entry, log.firstChild);
+            if (log.children.length > 10) log.removeChild(log.lastChild);
+        }
+
+        function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+        function resetRapid() {
+            rapidDebtorId = null;
+            rapidTxCount = 0;
+            document.getElementById('rapidInfo').style.display = 'none';
+        }
+
+        function setPreset(type) {
+            const ts = Date.now();
+            document.getElementById('rapidInfo').style.display = type === 'rapid' ? 'block' : 'none';
+            
+            if (type === 'rapid') {
+                if (!rapidDebtorId || rapidTxCount >= 6) { rapidDebtorId = 'RAPID_' + ts; rapidTxCount = 0; }
+                rapidTxCount++;
+                document.getElementById('rapidCounter').textContent = 'TX #' + rapidTxCount;
+            }
+            
+            const presets = {
+                normal: { debtorName: 'User Normal', debtorId: 'NORMAL_' + ts, creditorName: 'Recv_' + ts, amount: 500000 },
+                large: { debtorName: 'User Large', debtorId: 'LARGE_' + ts, creditorName: 'Recv_' + ts, amount: 15000000 },
+                rapid: { debtorName: 'User Rapid', debtorId: rapidDebtorId, creditorName: 'Recv_' + ts, amount: 100000 }
+            };
+            const p = presets[type];
+            document.getElementById('debtorName').value = p.debtorName;
+            document.getElementById('debtorId').value = p.debtorId;
+            document.getElementById('creditorName').value = p.creditorName;
+            document.getElementById('amount').value = p.amount;
+        }
+
+        async function sendTransaction() {
+            const btn = document.getElementById('sendBtn');
+            btn.disabled = true;
+            btn.textContent = '⏳ Processing...';
+            
+            resetFlow();
+            document.getElementById('resultBox').innerHTML = '<p class="placeholder">Memproses...</p>';
+
+            const debtorName = document.getElementById('debtorName').value;
+            const debtorId = document.getElementById('debtorId').value;
+            const creditorName = document.getElementById('creditorName').value;
+            const amount = parseInt(document.getElementById('amount').value);
+            
+            const txId = 'TX_' + (++txCounter);
+            const e2eId = 'E2E_' + txCounter;
+            const msgId = 'PACS002_' + txCounter;
+            const timestamp = new Date().toISOString();
+
+            try {
+                // Start animation immediately (non-blocking visual feedback)
+                addLog('📤 Bank mengirim transaksi Rp ' + amount.toLocaleString(), 'highlight');
+                animateNode('bank', 'Sending...');
+                
+                // Send pacs.008 immediately (same timing as original)
+                await fetch(`${TMS_URL}/v1/evaluate/iso20022/pacs.008.001.10`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(buildPacs008(txId, e2eId, timestamp, debtorName, debtorId, creditorName, amount))
+                });
+                
+                // Animate TMS while waiting 500ms (same as original)
+                animateArrow('arrow1');
+                addLog('📥 TMS menerima pacs.008', 'highlight');
+                animateNode('tms', 'Receiving...');
+                await sleep(500); // Same 500ms as original
+                
+                // Send pacs.002 (same timing as original)
+                await fetch(`${TMS_URL}/v1/evaluate/iso20022/pacs.002.001.12`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(buildPacs002(msgId, e2eId, timestamp, debtorId, amount))
+                });
+                
+                // Now run animations in parallel with the 1500ms wait
+                // This is purely visual - doesn't affect timing
+                const animationPromise = (async () => {
+                    await sleep(100);
+                    animateArrow('arrow2');
+                    addLog('🔀 Event Director routing...', 'highlight');
+                    animateNode('ed', 'Routing...');
+                    
+                    await sleep(200);
+                    animateArrow('arrow3');
+                    addLog('📋 Rules evaluating...', 'highlight');
+                    animateNode('rules', 'Evaluating...');
+                    
+                    await sleep(300);
+                    animateArrow('arrow4');
+                    addLog('🧮 Typology scoring...', 'highlight');
+                    animateNode('tp', 'Scoring...');
+                    
+                    await sleep(300);
+                    animateArrow('arrow5');
+                    addLog('⚖️ TADP deciding...', 'highlight');
+                    animateNode('tadp', 'Deciding...');
+                    
+                    await sleep(200);
+                    animateArrow('arrow6');
+                })();
+                
+                // Wait 1500ms total (same as original) then query
+                await sleep(1500);
+                
+                // Get result with retries
+                const result = await getEvaluation(msgId);
+                const status = result.report?.status || 'UNKNOWN';
+                const isAlert = status === 'ALRT';
+                
+                // Wait for animation to finish if still running
+                await animationPromise;
+                
+                // Animate result
+                document.getElementById('result-icon').textContent = isAlert ? '🚨' : '✅';
+                animateNode('result', isAlert ? 'BLOCKED!' : 'APPROVED', isAlert);
+                
+                addLog(isAlert ? '🚨 TRANSAKSI DIBLOKIR!' : '✅ Transaksi disetujui', isAlert ? 'alert' : 'success');
+                
+                displayResult(result, msgId, amount, debtorName);
+                
+            } catch (error) {
+                addLog('❌ Error: ' + error.message, 'alert');
+                document.getElementById('resultBox').innerHTML = `<div class="status-big ALRT">ERROR</div><p style="text-align:center">${error.message}</p>`;
+            }
+
+            btn.disabled = false;
+            btn.textContent = '🚀 Kirim Transaksi';
+        }
+
+        function buildPacs008(txId, e2eId, timestamp, debtorName, debtorId, creditorName, amount) {
+            const creditorId = 'CRED_' + txCounter;
+            return {
+                TxTp: "pacs.008.001.10",
+                FIToFICstmrCdtTrf: {
+                    GrpHdr: { MsgId: txId, CreDtTm: timestamp, NbOfTxs: 1, SttlmInf: { SttlmMtd: "CLRG" } },
+                    CdtTrfTxInf: {
+                        PmtId: { InstrId: "INSTR_" + txId, EndToEndId: e2eId },
+                        IntrBkSttlmAmt: { Amt: { Amt: amount, Ccy: "IDR" } },
+                        InstdAmt: { Amt: { Amt: amount, Ccy: "IDR" } },
+                        XchgRate: 1, ChrgBr: "DEBT",
+                        ChrgsInf: { Amt: { Amt: 0, Ccy: "IDR" }, Agt: { FinInstnId: { ClrSysMmbId: { MmbId: "fsp001" } } } },
+                        InitgPty: { Nm: debtorName, Id: { PrvtId: { DtAndPlcOfBirth: { BirthDt: "1990-01-01", CityOfBirth: "Jakarta", CtryOfBirth: "ID" }, Othr: [{ Id: debtorId, SchmeNm: { Prtry: "MSISDN" } }] } }, CtctDtls: { MobNb: "+62-811" } },
+                        Dbtr: { Nm: debtorName, Id: { PrvtId: { DtAndPlcOfBirth: { BirthDt: "1990-01-01", CityOfBirth: "Jakarta", CtryOfBirth: "ID" }, Othr: [{ Id: debtorId, SchmeNm: { Prtry: "MSISDN" } }] } }, CtctDtls: { MobNb: "+62-811" } },
+                        DbtrAcct: { Id: { Othr: [{ Id: "ACC_" + debtorId, SchmeNm: { Prtry: "MSISDN" } }] }, Nm: "Account" },
+                        DbtrAgt: { FinInstnId: { ClrSysMmbId: { MmbId: "fsp001" } } },
+                        CdtrAgt: { FinInstnId: { ClrSysMmbId: { MmbId: "fsp002" } } },
+                        Cdtr: { Nm: creditorName, Id: { PrvtId: { DtAndPlcOfBirth: { BirthDt: "1985-01-01", CityOfBirth: "Bandung", CtryOfBirth: "ID" }, Othr: [{ Id: creditorId, SchmeNm: { Prtry: "MSISDN" } }] } }, CtctDtls: { MobNb: "+62-822" } },
+                        CdtrAcct: { Id: { Othr: [{ Id: "ACC_" + creditorId, SchmeNm: { Prtry: "MSISDN" } }] }, Nm: "Account" },
+                        Purp: { Cd: "MP2P" }
+                    },
+                    RgltryRptg: { Dtls: { Tp: "BALANCE OF PAYMENTS", Cd: "100" } },
+                    RmtInf: { Ustrd: "Transfer" },
+                    SplmtryData: { Envlp: { Doc: { Xprtn: "2026-12-31T23:59:59.000Z", InitgPty: { Glctn: { Lat: "-6.2", Long: "106.8" } } } } }
+                }
+            };
+        }
+
+        function buildPacs002(msgId, e2eId, timestamp, debtorId, amount) {
+            const creditorId = 'CRED_' + txCounter;
+            return {
+                TxTp: "pacs.002.001.12",
+                FIToFIPmtSts: {
+                    GrpHdr: { MsgId: msgId, CreDtTm: timestamp },
+                    TxInfAndSts: {
+                        OrgnlInstrId: "INSTR_" + msgId, OrgnlEndToEndId: e2eId, TxSts: "ACCC",
+                        ChrgsInf: [
+                            { Amt: { Amt: 0, Ccy: "IDR" }, Agt: { FinInstnId: { ClrSysMmbId: { MmbId: "fsp001" } } } },
+                            { Amt: { Amt: 0, Ccy: "IDR" }, Agt: { FinInstnId: { ClrSysMmbId: { MmbId: "fsp002" } } } }
+                        ],
+                        AccptncDtTm: timestamp,
+                        InstgAgt: { FinInstnId: { ClrSysMmbId: { MmbId: "fsp001" } } },
+                        InstdAgt: { FinInstnId: { ClrSysMmbId: { MmbId: "fsp002" } } }
+                    }
+                },
+                DataCache: { dbtrId: debtorId, cdtrId: creditorId, dbtrAcctId: "ACC_" + debtorId, cdtrAcctId: "ACC_" + creditorId, instdAmt: { amt: amount, ccy: "IDR" } }
+            };
+        }
+
+        async function getEvaluation(msgId, maxRetries = 5) {
+            for (let attempt = 1; attempt <= maxRetries; attempt++) {
+                try {
+                    const res = await fetch(`${HASURA_URL}/v1/graphql`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'x-hasura-admin-secret': 'password' },
+                        body: JSON.stringify({ query: `{ evaluation(where: {messageid: {_eq: "${msgId}"}}) { evaluation } }` })
+                    });
+                    const data = await res.json();
+                    
+                    if (data.data?.evaluation?.[0]?.evaluation) {
+                        return data.data.evaluation[0].evaluation;
+                    }
+                } catch (e) {
+                    // Network error, will retry
+                }
+                
+                if (attempt < maxRetries) {
+                    await sleep(500);
+                }
+            }
+            throw new Error('Evaluation not found');
+        }
+
+        function displayResult(result, msgId, amount, debtorName) {
+            const status = result.report?.status || 'UNKNOWN';
+            const typologies = result.report?.tadpResult?.typologyResult || [];
+            
+            let html = `<div class="status-big ${status}">${status === 'ALRT' ? '🚨 BLOCKED' : '✅ APPROVED'}</div>`;
+            html += '<div class="result-details">';
+            html += `<div class="row"><span class="label">Amount</span><span class="value">Rp ${amount.toLocaleString('id-ID')}</span></div>`;
+            
+            typologies.forEach(t => {
+                const score = t.result || 0;
+                let color = '#2ed573';
+                if (score >= 400) color = '#ff4757';
+                else if (score >= 200) color = '#ffa502';
+                html += `<div class="row"><span class="label">${t.cfg}</span><span class="value" style="color:${color}">Score: ${score}</span></div>`;
+            });
+            html += '</div>';
+            
+            document.getElementById('resultBox').innerHTML = html;
+
+            history.unshift({ msgId, amount, status, debtorName, time: new Date().toLocaleTimeString() });
+            updateHistory();
+        }
+
+        function updateHistory() {
+            const list = document.getElementById('historyList');
+            if (history.length === 0) { list.innerHTML = '<p class="placeholder">Belum ada transaksi</p>'; return; }
+            list.innerHTML = history.slice(0, 10).map(h => `
+                <div class="history-item">
+                    <div class="top">
+                        <span class="amount">Rp ${h.amount.toLocaleString('id-ID')}</span>
+                        <span class="badge ${h.status}">${h.status}</span>
+                    </div>
+                    <div class="meta">${h.debtorName} • ${h.time}</div>
+                </div>
+            `).join('');
+        }
+    </script>
+</body>
+</html>
